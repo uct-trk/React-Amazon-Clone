@@ -46,4 +46,5 @@
     color: #111;
     cursor: pointer;
     padding: 10px;
+    z-index: 99;
 }
