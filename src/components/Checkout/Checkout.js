@@ -7,7 +7,7 @@ import './checkout.css'
 const Checkout = () => {
 
     const [state, dispatch] = useStateValue()
-    const {cart} = state
+    const {cart, user} = state
     console.log(cart)
 
     return (
@@ -15,8 +15,9 @@ const Checkout = () => {
             <div className="checkout__left">
                 <img className="checkout__ad" src="https://images-eu.ssl-images-amazon.com/images/G/41/prime/garanti/TR21_GARANTIBANK_PRIME_PARTNERSHIP_EventPage_1500x375.jpg" alt="" />
                 <div>
+                    <h1>Hello, {user && user.email}</h1>
                     <h2 className="checkout__title">
-                        Your Shopping Cart
+                        {!cart.length ? (<h1>Your Cart Empty</h1>) : (<h1>Your Cart {cart.length}</h1>)}
                     </h2>
 
                     {cart.map((item, index) => (
