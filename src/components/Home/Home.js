@@ -13,7 +13,7 @@ const Home = () => {
         />
         <div className="home__row">
           <Product
-            title="Amazon Watc"
+            title="Amazon Watch"
             price={429.99}
             image="https://m.media-amazon.com/images/I/61AFh5sIoZS._AC_UL320_.jpg"
             rating={5}
