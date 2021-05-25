@@ -5,6 +5,7 @@ import CurrencyFormat from "react-currency-format";
 import { Link, useHistory } from "react-router-dom";
 import { getCartTotal } from "../../Context/reducer";
 import { useStateValue } from "../../Context/StateProvider";
+import { db } from "../../Firebase/firebase";
 import CheckoutProduct from "../CheckOutProduct/CheckoutProduct";
 import "./payment.css";
 
@@ -24,20 +25,25 @@ const Payment = () => {
   const [succeeded, setSucceeded] = useState(false);
   const [processing, setProcessing] = useState("")
   const [clientSecret, setClientSecret] = useState(true)
+  
+
 
   useEffect(() => {
-    // generate the special stripe secret which secret allows us to charge a customer
+    // generate the special stripe secret which allows us to charge a customer
     const getClientSecret = async () => {
-      const response = await axios({
-        method: 'post',
-        url: `/payments/create?total=${getCartTotal(cart) * 100}`
-      })
-      setClientSecret(response.data.clientSecret)
+        const response = await axios({
+            method: 'post',
+            // Stripe expects the total in a currencies subunits
+            url: `/payments/create?total=${getCartTotal(cart) * 100}`
+        });
+        setClientSecret(response.data.clientSecret)
     }
+
     getClientSecret();
-  }, [cart])
+}, [cart])
 
   console.log("the secret is >>", clientSecret)
+  console.log("user >>>", user)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -46,9 +52,20 @@ const Payment = () => {
     const payload = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
         card: elements.getElement(CardElement)
-      }
+    }
     }).then(({paymentIntent}) => {
-      setSucceeded(true)
+
+      db.collection("users")
+      .doc(user?.uid)
+      .collection("orders")
+      .doc(paymentIntent.id)
+      .set({
+        cart: cart,
+        amount: paymentIntent.amount,
+        created: paymentIntent.created
+      })
+
+      setSucceeded(true);
       setError(null)
       setProcessing(false)
 
@@ -88,8 +105,9 @@ const Payment = () => {
             <h3>Review items and delivery</h3>
           </div>
           <div className="payment__items">
-              {cart.map(item => (
+              {cart.map((item,i) => (
                   <CheckoutProduct
+                    key={i}
                     id={item.id}
                     image={item.image}
                     title={item.title}
